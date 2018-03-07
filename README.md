@@ -1,10 +1,10 @@
-# nanospec
+# nanocspec
 xSpec style simple test tool for C. (single header, embedded system)
 
 
 ## How to install
 
-Copy nanospec.h into your test code.
+Copy nanocspec.h into your test code.
 
 ## How to run example
 
