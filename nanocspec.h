@@ -31,13 +31,13 @@
     nanospec_printf("\n## %u.%s\n\n", nanospec_num_describe, title); \
     do { \
       __label__ __nanospec_end_it; \
-      int const nanospec_it_fail_count = 0;
+      int const nanospec_it_fail_count = -1;
 
 
 #define end_it          \
     if (nanospec_it_fail_count == 0) { nanospec_printf(" ... [success]\n"); } \
     __nanospec_end_it: __attribute__((unused)); \
-    if (nanospec_it_fail_count != 0) { ++nanospec_num_failed_tests; nanospec_printf("\n\n    %u assertions are failed\n\n", nanospec_it_fail_count); } \
+    if (nanospec_it_fail_count > 0) { ++nanospec_num_failed_tests; nanospec_printf("\n\n    %u assertions are failed\n\n", nanospec_it_fail_count); } \
   } while (0);
 
 
