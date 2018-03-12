@@ -1,5 +1,5 @@
 
-#define NANOSPEC_MAIN
+#define NANOCSPEC_MAIN
 #include "./nanocspec.h"
 
 describe(basic, "basic functions")
@@ -33,7 +33,6 @@ describe(basic, "basic functions")
     assert_lt(2, 1);
     assert_le(2, 2);
 
-  end_it
 
   it("fail with integer.")
     should_eq(1, 2);
@@ -47,7 +46,6 @@ describe(basic, "basic functions")
 
     assert_eq(1, 2);
     assert_eq(2, 3); // never reachs here
-  end_it
 
   it("success with boolean")
     should_eq(true, true);
@@ -57,7 +55,6 @@ describe(basic, "basic functions")
 
     should_true(true);
     should_false(false);
-  end_it
 
   it("fail with boolean")
     should_ne(true, true);
@@ -67,13 +64,11 @@ describe(basic, "basic functions")
 
     should_true(false);
     should_false(true);
-  end_it
 
-  it_("one liner", should_eq(1, 1));
+  it("one liner") should_eq(1, 1);
   it("able to skip")
     skip_it("God helps me");
-  end_it
-  it_("one line skip", skip_it("I'm feeling lucky"));
+  it("one line skip") skip_it("I'm feeling lucky");
 end_describe
 
 

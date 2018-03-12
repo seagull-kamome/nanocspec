@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#if defined(NANOSPEC_CUSTOM_STDIO)
+#if defined(NANOCSPEC_CUSTOM_STDIO)
 #  if !defined(nanospec_printf)
 #    include "nanospec_user_stdio.h"
 #  endif
@@ -28,29 +28,34 @@
   void nanospec_describe_##name##_run(void) { \
     ++nanospec_num_describe; \
     unsigned int nanospec_tmp_failed_tests = nanospec_num_failed_tests; \
-    nanospec_printf("\n## %u.%s\n\n", nanospec_num_describe, title);
-#define end_describe    \
-    if (nanospec_tmp_failed_tests != nanospec_num_failed_tests) \
-      ++nanospec_num_failed_describe; \
-  }
+    nanospec_printf("\n## %u.%s\n\n", nanospec_num_describe, title); \
+    do { \
+      __label__ __nanospec_end_it; \
+      int const nanospec_it_fail_count = 0;
 
 
-#define it(title)       \
-  do { \
-    __label__ __nanospec_end_it; \
-    int nanospec_it_fail_count = 0; \
-    ++nanospec_num_tests; \
-    nanospec_printf("- it %s", title);
 #define end_it          \
     if (nanospec_it_fail_count == 0) { nanospec_printf(" ... [success]\n"); } \
     __nanospec_end_it: __attribute__((unused)); \
     if (nanospec_it_fail_count != 0) { ++nanospec_num_failed_tests; nanospec_printf("\n\n    %u assertions are failed\n\n", nanospec_it_fail_count); } \
   } while (0);
 
-#define it_(title, test) \
-  it(title) \
-    test; \
-  end_it
+
+#define it(title)       \
+  end_it \
+  do { \
+    __label__ __nanospec_end_it; \
+    int nanospec_it_fail_count = 0; \
+    ++nanospec_num_tests; \
+    nanospec_printf("- it %s", title);
+
+
+#define end_describe    \
+    end_it \
+    if (nanospec_tmp_failed_tests != nanospec_num_failed_tests) \
+      ++nanospec_num_failed_describe; \
+  }
+
 
 #define skip_it(reason) \
   do { \
@@ -75,7 +80,7 @@
 
 
 
-#if defined(NANOSPEC_MAIN)
+#if defined(NANOCSPEC_MAIN)
 
 unsigned int nanospec_num_describe = 0;
 unsigned int nanospec_num_failed_describe = 0;
@@ -122,7 +127,7 @@ extern unsigned int nanospec_num_failed_assertions;
 void nanospec_failure_bool(
     char const* const lvl,
     char const* const file, unsigned int const lineno,
-    bool const expect) {
+    bool const expect);
 
 #endif
 
@@ -140,7 +145,8 @@ nanospec_make_failure_handler(unsigned long long, ullint, "%llu", "0x%llx")
 nanospec_make_failure_handler(void*, ptr, "%p", "0x%p")
 
 
-
+#define nanospec_fail(lvl, name, typ, op, expect, actual) \
+  nanospec_failure_##name(lvl, __FILE__, __LINE__, #op, (typ)(uintptr_t)(expect), (typ)(uintptr_t)(actual))
 
 
 #define nanospec_compare(lvl, op, expect, actual, onfail) \
@@ -151,20 +157,20 @@ nanospec_make_failure_handler(void*, ptr, "%p", "0x%p")
      if (! (__expect op __actual)) { \
        ++nanospec_it_fail_count; \
        _Generic((__actual) \
-           , char: nanospec_failure_char(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , unsigned char: nanospec_failure_uchar(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , short: nanospec_failure_short(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , unsigned short: nanospec_failure_ushort(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , int: nanospec_failure_int(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , unsigned int: nanospec_failure_uint(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , long int: nanospec_failure_lint(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , unsigned long int: nanospec_failure_ulint(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , long long int: nanospec_failure_llint(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , unsigned long long int: nanospec_failure_ullint(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
-           , void*: nanospec_failure_ptr(lvl, __FILE__, __LINE__, #op, (void*)(uintptr_t)__expect, (void*)(uintptr_t)__actual) \
+           , char: nanospec_fail(lvl, char, char, op, __expect, __actual) \
+           , unsigned char: nanospec_fail(lvl, uchar, unsigned char, op, __expect, __actual) \
+           , short: nanospec_fail(lvl, short, short, op, __expect, __actual) \
+           , unsigned short: nanospec_fail(lvl, ushort, unsigned short, op, __expect, __actual) \
+           , int: nanospec_fail(lvl, int, int, op, __expect, __actual) \
+           , unsigned int: nanospec_fail(lvl, uint, unsigned int, op, __expect, __actual) \
+           , long int: nanospec_fail(lvl, lint, long int, op, __expect, __actual) \
+           , unsigned long int: nanospec_fail(lvl, ulint, unsigned long int, op, __expect, __actual) \
+           , long long int: nanospec_fail(lvl, llint, long long int, op, __expect, __actual) \
+           , unsigned long long int: nanospec_fail(lvl, ullint, unsigned long long int, op, __expect, __actual) \
+           , void*: nanospec_fail(lvl, ptr, void*, op, __expect, __actual) \
            /* , long int: nanospec_failure_int32_t(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
            , unsigned long int: nanospec_failure_uint32_t(lvl, __FILE__, __LINE__, #op, __expect, __actual) */ \
-           , bool: nanospec_failure_bool(lvl, __FILE__, __LINE__, ((__expect op true)?true:false)) \
+           , bool: nanospec_failure_bool(lvl, __FILE__, __LINE__, (((bool)__expect op true)?true:false)) \
            ); \
        onfail; \
      } \
