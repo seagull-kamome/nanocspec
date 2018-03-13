@@ -167,10 +167,10 @@ nanospec_make_failure_handler(void*, ptr, "%p", "0x%p")
            , unsigned long int: nanospec_fail(lvl, ulint, unsigned long int, op, __expect, __actual) \
            , long long int: nanospec_fail(lvl, llint, long long int, op, __expect, __actual) \
            , unsigned long long int: nanospec_fail(lvl, ullint, unsigned long long int, op, __expect, __actual) \
-           , void*: nanospec_fail(lvl, ptr, void*, op, __expect, __actual) \
            /* , long int: nanospec_failure_int32_t(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
            , unsigned long int: nanospec_failure_uint32_t(lvl, __FILE__, __LINE__, #op, __expect, __actual) */ \
            , bool: nanospec_failure_bool(lvl, __FILE__, __LINE__, (((bool)__expect op true)?true:false)) \
+           , default: nanospec_fail(lvl, ptr, void*, op, __expect, __actual) \
            ); \
        onfail; \
      } \
