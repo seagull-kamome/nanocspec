@@ -28,7 +28,7 @@
   void nanospec_describe_##name##_run(void) { \
     ++nanospec_num_describe; \
     unsigned int nanospec_tmp_failed_tests = nanospec_num_failed_tests; \
-    nanospec_printf("\n## %u.%s\n\n", nanospec_num_describe, title); \
+    nanospec_printf("\n## %u.%s - %s\n\n", nanospec_num_describe, #name, title); \
     do { \
       __label__ __nanospec_end_it; \
       int const nanospec_it_fail_count = -1;
