@@ -132,6 +132,24 @@ void nanospec_failure_bool(
 #endif
 
 
+#if defined(NANOCSPEC_LEGACY_COMPILER)
+
+nanospec_make_failure_handler(unsigned long, ulint, "%lu", "0x%lx")
+
+#  define nanospec_compare(lvl, op, expect, actual, onfail) \
+  do { \
+	  unsigned long const __expect = (unsigned long)(expect); \
+	  unsigned long const __actual = (unsigned long)(actual); \
+	  ++nanospec_num_assertions; \
+	  if (! (__expect op __actual)) { \
+        ++nanospec_it_fail_count; \
+	    nanospec_failure_ulint(lvl, __FILE__, __LINE__, #op, __expect, __actual); \
+        onfail; \
+	  } \
+  } while (0)
+
+#else
+
 nanospec_make_failure_handler(char, char, "%d", "0x%x")
 nanospec_make_failure_handler(unsigned char, uchar, "%u", "0x%x")
 nanospec_make_failure_handler(short, short, "%d", "0x%x")
@@ -144,12 +162,10 @@ nanospec_make_failure_handler(long long int, llint, "%lld", "0x%llx")
 nanospec_make_failure_handler(unsigned long long, ullint, "%llu", "0x%llx")
 nanospec_make_failure_handler(void*, ptr, "%p", "0x%p")
 
+#  define nanospec_fail(lvl, name, typ, op, expect, actual) \
+	    nanospec_failure_##name(lvl, __FILE__, __LINE__, #op, (typ)(uintptr_t)(expect), (typ)(uintptr_t)(actual))
 
-#define nanospec_fail(lvl, name, typ, op, expect, actual) \
-  nanospec_failure_##name(lvl, __FILE__, __LINE__, #op, (typ)(uintptr_t)(expect), (typ)(uintptr_t)(actual))
-
-
-#define nanospec_compare(lvl, op, expect, actual, onfail) \
+#  define nanospec_compare(lvl, op, expect, actual, onfail) \
   do { typeof(expect) const __expect = (expect); \
        typeof(actual) const __actual = (actual); \
      /* _Static_assert(_Generic((__actual), typeof(__expect):1), "actual value has no same type with expected value."); */ \
@@ -169,12 +185,13 @@ nanospec_make_failure_handler(void*, ptr, "%p", "0x%p")
            , unsigned long long int: nanospec_fail(lvl, ullint, unsigned long long int, op, __expect, __actual) \
            /* , long int: nanospec_failure_int32_t(lvl, __FILE__, __LINE__, #op, __expect, __actual) \
            , unsigned long int: nanospec_failure_uint32_t(lvl, __FILE__, __LINE__, #op, __expect, __actual) */ \
-           , bool: nanospec_failure_bool(lvl, __FILE__, __LINE__, (((bool)__expect op true)?true:false)) \
+           , bool: nanospec_failure_bool(lvl, __FILE__, __LINE__, (((bool)__expect op (bool)__actual)?true:false)) \
            , default: nanospec_fail(lvl, ptr, void*, op, __expect, __actual) \
            ); \
        onfail; \
      } \
   } while (0)
+#endif
 
 #define nanospec_compare_bool(lvl, expect, actual, onfail) \
   do { \
