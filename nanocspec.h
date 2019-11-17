@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <assert.h>
+#include <stdarg.h>
 
 #if defined(NANOCSPEC_CUSTOM_STDIO)
 #  if !defined(nanospec_printf)
@@ -38,6 +39,7 @@
     if (nanospec_it_fail_count == 0) { nanospec_printf(" ... [success]\n"); } \
     __nanospec_end_it: __attribute__((unused)); \
     if (nanospec_it_fail_count > 0) { ++nanospec_num_failed_tests; nanospec_printf("\n\n    %u assertions are failed\n\n", nanospec_it_fail_count); } \
+    nanospec_output_quote(); \
   } while (0);
 
 
@@ -108,6 +110,28 @@ void nanospec_failure_bool(
       lvl, expect?"true":"false", file, lineno);
 }
 
+
+char nanocspec_quote_buff[1024];
+unsigned int nanocspec_quote_num = 0;
+
+void nanocspec_quote(char const* fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  int n = vsnprintf(nanocspec_quote_buff + nanocspec_quote_num,
+           sizeof(nanocspec_quote_buff) - nanocspec_quote_num - 1,
+           fmt, ap);
+  va_end(ap);
+
+  if (n > 0) nanocspec_quote_num += n;
+}
+
+void nanospec_output_quote(void) {
+  if (nanocspec_quote_num > 0)
+    nanospec_printf("        %s\n", nanocspec_quote_buff);
+  nanocspec_quote_num = 0;
+}
+
+
 #else
 
 extern unsigned int nanospec_num_describe;
@@ -128,6 +152,10 @@ void nanospec_failure_bool(
     char const* const lvl,
     char const* const file, unsigned int const lineno,
     bool const expect);
+
+
+void nanocspec_quote(char const* fmt, ...);
+void nanospec_output_quote(void);
 
 #endif
 
