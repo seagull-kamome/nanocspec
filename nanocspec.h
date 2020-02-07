@@ -115,14 +115,20 @@ char nanocspec_quote_buff[1024];
 unsigned int nanocspec_quote_num = 0;
 
 void nanocspec_quote(char const* fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  int n = vsnprintf(nanocspec_quote_buff + nanocspec_quote_num,
-           sizeof(nanocspec_quote_buff) - nanocspec_quote_num - 1,
-           fmt, ap);
-  va_end(ap);
-
-  if (n > 0) nanocspec_quote_num += n;
+  if (nanocspec_quote_num < sizeof(nanocspec_quote_buff) - 1) {
+    va_list ap;
+    va_start(ap, fmt);
+    int n = vsnprintf(nanocspec_quote_buff + nanocspec_quote_num,
+        sizeof(nanocspec_quote_buff) - nanocspec_quote_num - 1,
+        fmt, ap);
+    va_end(ap);
+    if (n > 0) {
+      nanocspec_quote_num += n;
+      if (nanocspec_quote_num > sizeof(nanocspec_quote_buff) - 1)
+        nanocspec_quote_num = sizeof(nanocspec_quote_buff) - 1;
+      nanocspec_quote_buff[nanocspec_quote_num] = '\0';
+    }
+  }
 }
 
 void nanospec_output_quote(void) {
